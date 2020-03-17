@@ -1,0 +1,11 @@
+#iconPane, #highScorePane, #scorePane{
+    -fx-background-color: orange;
+}
+
+#icon, #highScore, #score{
+    -fx-font-size: 25pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: gray;
+    -fx-position-shape: center;
+}
+
