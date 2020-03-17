@@ -10,16 +10,14 @@ public class Board {
     private Label[][] board=new Label[DIMENSION][DIMENSION];
 
     public Board(GridPane boardPane){
-//        setupBoard(boardPane);
+        setupBoard(boardPane);
     }
 
     private void setupBoard(GridPane boardPane){
         this.boardPane=boardPane;
-        ObservableList<Node> nodes=boardPane.getChildren();
-
         for(int i=0;i<DIMENSION;i++){
             for(int j=0;j<DIMENSION;j++){
-                board[i][j]=(Label)nodes.get(i*DIMENSION+j);
+                boardPane.add(new Tile(),i,j);
             }
         }
     }

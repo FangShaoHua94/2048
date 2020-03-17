@@ -23,6 +23,8 @@ public class MainWindow extends AnchorPane {
     @FXML
     public void initialize(){
         setupIcon();
+        setupScore();
+        setupHighScore();
         board=new Board(boardPane);
     }
 
@@ -30,6 +32,16 @@ public class MainWindow extends AnchorPane {
     private void setupIcon(){
         Label icon=(Label) iconPane.getChildren().get(0);
         icon.setText("2048");
+    }
+
+    private void setupScore(){
+        Label score=(Label) scorePane.getChildren().get(0);
+        score.setText("Score");
+    }
+
+    private void setupHighScore(){
+        Label highScore=(Label) highScorePane.getChildren().get(0);
+        highScore.setText("Best");
     }
 
 }

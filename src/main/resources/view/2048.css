@@ -9,3 +9,16 @@
     -fx-position-shape: center;
 }
 
+#highScoreLabel, #scoreLabel{
+    -fx-font-size: 18pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: darkviolet ;
+    -fx-position-shape: center;
+}
+
+#boardPane{
+    -fx-border-color: lightblue;
+    -fx-border-width: 5;
+}
+
+
