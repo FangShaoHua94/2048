@@ -1,3 +1,4 @@
+
 #iconPane, #highScorePane, #scorePane{
     -fx-background-color: orange;
 }
@@ -17,8 +18,10 @@
 }
 
 #boardPane{
-    -fx-border-color: lightblue;
-    -fx-border-width: 5;
+    /*-fx-border-color: grey;*/
+    -fx-background-color: grey;
+    /*-fx-border-width: 5;*/
 }
+
 
 

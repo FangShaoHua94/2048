@@ -22,10 +22,11 @@ public class MainWindow extends AnchorPane {
 
     @FXML
     public void initialize(){
+        board=new Board(boardPane);
         setupIcon();
         setupScore();
         setupHighScore();
-        board=new Board(boardPane);
+        setupControl();
     }
 
 
@@ -42,6 +43,10 @@ public class MainWindow extends AnchorPane {
     private void setupHighScore(){
         Label highScore=(Label) highScorePane.getChildren().get(0);
         highScore.setText("Best");
+    }
+
+    private void setupControl(){
+        setOnKeyPressed(new KeyHandler(board));
     }
 
 }

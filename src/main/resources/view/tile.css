@@ -1,0 +1,23 @@
+#tilePane{
+    -fx-background-color: darkgrey";
+}
+
+#tileLabel{
+    -fx-font-size: 18pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: darkviolet ;
+    -fx-position-shape: center;
+}
+
+#Pane{
+    -fx-background-color: darkgrey";
+}
+
+#Tile.Label{
+    -fx-font-size: 18pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: darkviolet ;
+    -fx-position-shape: center;
+}
+
+
