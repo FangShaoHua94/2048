@@ -13,6 +13,7 @@ public class Main extends Application {
             FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("/view/MainWindow.fxml"));
             AnchorPane root = fxmlLoader.load();
             Scene scene = new Scene(root);
+            scene.setOnKeyPressed(new KeyHandler(fxmlLoader.<MainWindow>getController().getBoard()));
             stage.setScene(scene);
             stage.setTitle("2048");
             stage.setResizable(false);

@@ -31,6 +31,7 @@ public class Tile extends Pane {
 
     public void clearValue(){
         setValue(0);
+
         isFilled=false;
     }
 

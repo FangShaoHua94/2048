@@ -1,6 +1,7 @@
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class Board {
         this.boardPane=boardPane;
         setupBoard();
         setupGame();
+        display();
     }
 
     private void setupBoard(){
@@ -26,7 +28,7 @@ public class Board {
             for(int j=0;j<DIMENSION;j++){
                 Tile tile=new Tile();
                 board[i][j]=tile;
-                boardPane.add(tile,i,j);
+                boardPane.add(tile,j,i);
             }
         }
     }
@@ -72,6 +74,7 @@ public class Board {
             break;
         }
         refillGridPane();
+        display();
     }
 
     private void sort(){
@@ -83,9 +86,9 @@ public class Board {
     }
 
     private void sortRow(Tile[] tiles){
-        for(int i=0;i<DIMENSION-1;i++){
+        for(int i=0;i<3;i++){
             if(!tiles[i].isFilled()){
-                for(int j=0;j<i+1;j++){
+                for(int j=i+1;j<4;j++){
                     if(tiles[j].isFilled()){
                         Tile temp=tiles[i];
                         tiles[i]=tiles[j];
@@ -98,7 +101,7 @@ public class Board {
 
     private boolean merge(Tile[] tiles){
         boolean isMerge=false;
-        for(int i=0;i<DIMENSION-1;i++){
+        for(int i=0;i<3;i++){
             if(tiles[i].isFilled() && tiles[i].getValue() == tiles[i+1].getValue()){
                 tiles[i].multiply();
                 tiles[i+1].clearValue();
@@ -142,9 +145,19 @@ public class Board {
         boardPane.getChildren().removeAll(nodes);
         for(int i=0;i<DIMENSION;i++){
             for(int j=0;j<DIMENSION;j++){
-                boardPane.add(board[i][j],i,j);
+                boardPane.add(board[i][j],j,i);
             }
         }
+    }
+
+    private void display(){
+        for(int i=0;i<DIMENSION;i++){
+            for(int j=0;j<DIMENSION;j++){
+                System.out.print(board[i][j].getValue()+" ");
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 
 }

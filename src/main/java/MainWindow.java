@@ -26,7 +26,6 @@ public class MainWindow extends AnchorPane {
         setupIcon();
         setupScore();
         setupHighScore();
-        setupControl();
     }
 
 
@@ -45,8 +44,7 @@ public class MainWindow extends AnchorPane {
         highScore.setText("Best");
     }
 
-    private void setupControl(){
-        setOnKeyPressed(new KeyHandler(board));
+    public Board getBoard(){
+        return board;
     }
-
 }
