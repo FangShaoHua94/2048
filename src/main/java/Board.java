@@ -35,13 +35,21 @@ public class Board {
 
     private void setupGame(){
         for(int i=0;i<2;i++) {
-            Tile tile;
-            do {
-                Random random = new Random(System.currentTimeMillis());
-                tile=board[random.nextInt(DIMENSION)][random.nextInt(DIMENSION)];
-            } while (tile.isFilled());
-            tile.initialize(START_VALUE);
+            generateValue();
         }
+    }
+
+    private void generateValue(){
+        Tile tile;
+        int count=0;
+        do {
+            Random random = new Random(System.currentTimeMillis());
+            tile=board[random.nextInt(DIMENSION)][random.nextInt(DIMENSION)];
+            count++;
+        } while (tile.isFilled());
+        System.out.println("count:"+ count);
+        tile.initialize(START_VALUE);
+        refillGridPane();
     }
 
     public void squash(Direction direction){
@@ -74,14 +82,15 @@ public class Board {
             break;
         }
         refillGridPane();
+        generateValue();
         display();
     }
 
     private void sort(){
         for(int i=0;i<DIMENSION;i++){
-            do{
-                sortRow(board[i]);
-            }while(merge(board[i]));
+            sortRow(board[i]);
+            merge(board[i]);
+            sortRow(board[i]);
         }
     }
 
