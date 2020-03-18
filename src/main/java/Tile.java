@@ -31,12 +31,16 @@ public class Tile extends Pane {
 
     public void clearValue(){
         setValue(0);
-
         isFilled=false;
     }
 
     private void setValue(int value){
         this.value=value;
+        if(value==0){
+            label.setText("");
+        }else {
+            label.setText(String.valueOf(value));
+        }
     }
 
     public int getValue(){
@@ -45,9 +49,9 @@ public class Tile extends Pane {
 
     public void initialize(int value){
         setValue(value);
-        label.setText(String.valueOf(value));
         isFilled=true;
     }
+
 
 
 }
