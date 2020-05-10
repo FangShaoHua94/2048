@@ -21,13 +21,13 @@ public class Cell extends Rectangle {
     private int col;
     private Text text;
     private int value;
-
-    private static int[] bound=new int[]{10,120,230,340};
+    private boolean merged;
 
     public Cell(int row, int col, int startingX, int startingY) {
         super(startingX, startingY, CEll_DIMENSION, CEll_DIMENSION);
         originalRow = row;
         originalCol = col;
+        merged=false;
         this.row = row;
         this.col = col;
         if(new Random(System.currentTimeMillis()+row+col*row).nextInt(10)==0){
@@ -50,6 +50,15 @@ public class Cell extends Rectangle {
     public void merge() {
         value *= 2;
         text.setText("" + value);
+        merged=true;
+    }
+
+    public boolean hasMerged(){
+        return merged;
+    }
+
+    public void setMerged(){
+        merged=false;
     }
 
     public int getValue() {

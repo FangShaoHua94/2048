@@ -1,5 +1,6 @@
 package game;
 
+import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -29,7 +30,8 @@ public class Game extends Application implements EventHandler<KeyEvent> {
     public static final long TRANSITION_DELAY = 50;
 
     Group root;
-    ArrayList<TranslateTransition> motion = new ArrayList<>();
+    ArrayList<TranslateTransition> translateMotion = new ArrayList<>();
+    ArrayList<ScaleTransition> mergeMotion = new ArrayList<>();
     ArrayList<Cell> toBeRemoved = new ArrayList<>();
     boolean controlOn = true;
 
@@ -118,15 +120,27 @@ public class Game extends Application implements EventHandler<KeyEvent> {
     }
 
     private void move(Direction direction, Cell cell, int distance) {
-        motion.add(translate(direction, cell, distance));
-        motion.add(translate(direction, cell.getText(), distance));
+        translateMotion.add(translate(direction, cell, distance));
+        translateMotion.add(translate(direction, cell.getText(), distance));
     }
 
     private void playMotion() {
-        for (TranslateTransition translateTransition : motion) {
+        translateMotion.get(translateMotion.size()-1).onFinishedProperty().set(actionEvent -> {
+            if(mergeMotion.isEmpty()){
+                controlOn = true;
+            }else {
+                mergeMotion.get(mergeMotion.size()-1).onFinishedProperty().set(event -> controlOn=true);
+                for (ScaleTransition scaleTransition : mergeMotion) {
+                    scaleTransition.play();
+                }
+                mergeMotion.clear();
+            }
+        });
+        for (TranslateTransition translateTransition : translateMotion) {
             translateTransition.play();
         }
-        motion.clear();
+
+        translateMotion.clear();
     }
 
     private void move(Direction direction) {
@@ -134,6 +148,10 @@ public class Game extends Application implements EventHandler<KeyEvent> {
             for (int j = 0; j < SIZE; j++) {
                 if (board[i][j] != null) {
                     move(direction, board[i][j], board[i][j].distance(direction));
+                    if(board[i][j].hasMerged()){
+                        mergeMotion.add(mergeSale(board[i][j]));
+                        board[i][j].setMerged();
+                    }
                 }
             }
         }
@@ -156,7 +174,7 @@ public class Game extends Application implements EventHandler<KeyEvent> {
         }
         translateTransition.setCycleCount(1);
         translateTransition.setAutoReverse(false);
-        translateTransition.onFinishedProperty().set(actionEvent -> controlOn = true);
+//        translateTransition.onFinishedProperty().set(actionEvent -> controlOn = true);
         return translateTransition;
     }
 
@@ -186,9 +204,38 @@ public class Game extends Application implements EventHandler<KeyEvent> {
             if (board[row][col] == null) {
                 board[row][col] = new Cell(row, col, BORDER_WIDTH + col * MOTION_DISTANCE, BORDER_WIDTH + row * MOTION_DISTANCE);
                 root.getChildren().addAll(board[row][col], board[row][col].getText());
+                scale(board[row][col]).play();
                 count++;
             }
         }
+    }
+
+    private ScaleTransition scale(Node node){
+        ScaleTransition scaleTransition = new ScaleTransition();
+        scaleTransition.setDuration(Duration.millis(TRANSITION_DELAY));
+        scaleTransition.setNode(node);
+        scaleTransition.setFromX(0.5);
+        scaleTransition.setFromY(0.5);
+        scaleTransition.setToX(1);
+        scaleTransition.setToY(1);
+        scaleTransition.setCycleCount(1);
+        scaleTransition.setAutoReverse(false);
+        scaleTransition.onFinishedProperty().set(actionEvent -> controlOn = true);
+        return scaleTransition;
+    }
+
+    private ScaleTransition mergeSale(Node node){
+        ScaleTransition scaleTransition=new ScaleTransition();
+        scaleTransition.setDuration(Duration.millis(TRANSITION_DELAY));
+        scaleTransition.setNode(node);
+//        scaleTransition.setFromX(1);
+//        scaleTransition.setFromY(1);
+        scaleTransition.setByX(0.1);
+        scaleTransition.setByY(0.1);
+        scaleTransition.setCycleCount(2);
+        scaleTransition.setAutoReverse(true);
+        scaleTransition.onFinishedProperty().set(actionEvent -> controlOn = true);
+        return scaleTransition;
     }
 
     private int numCell() {
