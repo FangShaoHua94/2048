@@ -8,7 +8,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Box;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
@@ -22,43 +21,25 @@ import java.util.Random;
 
 public class Main extends Application implements EventHandler<KeyEvent> {
 
-    static final int SIZE=4;
-    static final int HEIGHT=450;
-    static final int WIDTH=450;
-    static final int CEll_DIMENSION=100;
-    static final int BORDER_WIDTH=10;
-    static final int MOTION_DISTANCE=CEll_DIMENSION+BORDER_WIDTH;
+    static final int SIZE = 4;
+    static final int HEIGHT = 450;
+    static final int WIDTH = 450;
+    static final int CEll_DIMENSION = 100;
+    static final int BORDER_WIDTH = 10;
+    static final int MOTION_DISTANCE = CEll_DIMENSION + BORDER_WIDTH;
     static final Random random = new Random(System.currentTimeMillis());
+    static final long TRANSITION_DELAY = 50;
 
     Group root;
-    ArrayList<TranslateTransition> motion= new ArrayList<>();
+    ArrayList<TranslateTransition> motion = new ArrayList<>();
+    boolean controlOn = true;
 
-    Cell[][] board=new Cell[SIZE][SIZE];
+    Cell[][] board = new Cell[SIZE][SIZE];
 
-    int[] border= new int[]{10,110,210,310};
-
-    enum Direction{
-
-        UP(0,-1),DOWN(0,1),LEFT(-1,0),RIGHT(1,0);
-
-        int x, y;
-        Direction(int x,int y){
-            this.x=x;
-            this.y=y;
-        }
-
-        int getX(){
-            return x;
-        }
-
-        int getY(){
-            return y;
-        }
-    }
-
+    int[] border = new int[]{10, 110, 210, 310};
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         primaryStage.setTitle("2048");
         primaryStage.setResizable(false);
         root = new Group();
@@ -70,7 +51,7 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         invisible.setOnKeyPressed(this);
         root.getChildren().add(invisible);
 
-        setStartingCell();
+        generateCell(2);
         Scene scene = new Scene(root, WIDTH, HEIGHT);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -78,122 +59,288 @@ public class Main extends Application implements EventHandler<KeyEvent> {
 
     @Override
     public void handle(KeyEvent event) {
-        if(event.getCode()==KeyCode.LEFT){
-            System.out.println("move left");
-            move(Direction.LEFT);
-        } else if(event.getCode()==KeyCode.RIGHT){
-            System.out.println("move right");
-            move(Direction.RIGHT);
-        } else if(event.getCode()==KeyCode.UP){
-            System.out.println("move up");
-            move(Direction.UP);
-        } else if(event.getCode()==KeyCode.DOWN){
-            System.out.println("move down");
-            move(Direction.DOWN);
+        if (controlOn) {
+            if (event.getCode() == KeyCode.LEFT) {
+                System.out.println("move left");
+                shiftLeft();
+                move(Direction.LEFT);
+            } else if (event.getCode() == KeyCode.RIGHT) {
+                System.out.println("move right");
+                shiftRight();
+                move(Direction.RIGHT);
+            } else if (event.getCode() == KeyCode.UP) {
+                System.out.println("move up");
+                shiftUp();
+                move(Direction.UP);
+            } else if (event.getCode() == KeyCode.DOWN) {
+                System.out.println("move down");
+                shiftDown();
+                move(Direction.DOWN);
+            }
+            controlOn = false;
+            playMotion();
+            generateCell(1);
+            print();
         }
-        playMotion();
     }
 
-    void move(Direction direction){
-        for(int i=0;i<SIZE;i++){
-            for (int j=0;j<SIZE;j++){
-                if(board[i][j]!=null){
-                    motion.add(translate(direction,board[i][j]));
-                    motion.add(translate(direction,board[i][j].getText()));
+    void print() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                if (board[i][j] == null) {
+                    System.out.print("0 ");
+                } else {
+                    System.out.print(board[i][j].getValue() + " ");
                 }
             }
+            System.out.println();
         }
     }
 
-    void playMotion(){
-        for(TranslateTransition translateTransition:motion){
+    void move(Direction direction, Cell cell, int distance) {
+        motion.add(translate(direction, cell, distance));
+        motion.add(translate(direction, cell.getText(), distance));
+    }
+
+    void playMotion() {
+        for (TranslateTransition translateTransition : motion) {
             translateTransition.play();
         }
         motion.clear();
     }
 
-    TranslateTransition translate(Direction direction, Node node){
+    void move(Direction direction) {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                if (board[i][j] != null) {
+                    move(direction, board[i][j], board[i][j].distance(direction));
+                }
+            }
+        }
+    }
+
+    TranslateTransition translate(Direction direction, Node node, int distance) {
         TranslateTransition translateTransition = new TranslateTransition();
-        translateTransition.setDuration(Duration.millis(50));
+        translateTransition.setDuration(Duration.millis(TRANSITION_DELAY));
         translateTransition.setNode(node);
-        switch (direction){
+        switch (direction) {
         case UP:
-            translateTransition.setByY(-MOTION_DISTANCE);
-            break;
         case DOWN:
-            translateTransition.setByY(MOTION_DISTANCE);
+            translateTransition.setByY(distance);
             break;
         case LEFT:
-            translateTransition.setByX(-MOTION_DISTANCE);
-            break;
         case RIGHT:
-            translateTransition.setByX(MOTION_DISTANCE);
+            translateTransition.setByX(distance);
             break;
         default:
         }
         translateTransition.setCycleCount(1);
         translateTransition.setAutoReverse(false);
+        translateTransition.onFinishedProperty().set(actionEvent -> controlOn = true);
         return translateTransition;
     }
 
-    void setBoard(){
-        Rectangle square=new Rectangle(450,450);
+    void setBoard() {
+        Rectangle square = new Rectangle(450, 450);
         square.setFill(Color.ROSYBROWN);
-        square.addEventHandler(KeyEvent.KEY_TYPED,this);
+        square.addEventHandler(KeyEvent.KEY_TYPED, this);
         root.getChildren().add(square);
-        for(int i=0;i<SIZE;i++){
-            for(int j=0;j<SIZE;j++){
-                Rectangle cell = new Rectangle(10+i*110,10+j*110,CEll_DIMENSION,CEll_DIMENSION);
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                Rectangle cell = new Rectangle(10 + i * 110, 10 + j * 110, CEll_DIMENSION, CEll_DIMENSION);
                 cell.setFill(Color.WHEAT);
                 root.getChildren().add(cell);
             }
         }
     }
 
-    void setStartingCell(){
-        int count=0;
-        while(count!=2){
-            int row=random.nextInt(SIZE);
-            int col=random.nextInt(SIZE);
-            if(board[row][col]==null){
-                board[row][col]=new Cell(10+col*110,10+row*110);
-                root.getChildren().addAll(board[row][col],board[row][col].getText());
+    void generateCell(int num) {
+        if (numCell() == SIZE * SIZE) {
+            System.out.println("game over");
+            return;
+        }
+        int count = 0;
+        while (count != num) {
+            int row = random.nextInt(SIZE);
+            int col = random.nextInt(SIZE);
+            if (board[row][col] == null) {
+                board[row][col] = new Cell(row, col, BORDER_WIDTH + col * MOTION_DISTANCE, BORDER_WIDTH + row * MOTION_DISTANCE);
+                root.getChildren().addAll(board[row][col], board[row][col].getText());
                 count++;
             }
         }
     }
 
-    class Cell extends Rectangle{
+    int numCell() {
+        int count = 0;
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                if (board[i][j] != null) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    void shiftLeft() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                if (board[i][j] == null) {
+                    for (int k = j + 1; k < SIZE; k++) {
+                        if (board[i][k] != null) {
+                            board[i][j] = board[i][k];
+                            board[i][k] = null;
+                            board[i][j].setPos(i, j);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void shiftRight() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = SIZE - 1; j >= 0; j--) {
+                if (board[i][j] == null) {
+                    for (int k = j - 1; k >= 0; k--) {
+                        if (board[i][k] != null) {
+                            board[i][j] = board[i][k];
+                            board[i][k] = null;
+                            board[i][j].setPos(i, j);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void shiftUp() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                if (board[j][i] == null) {
+                    for (int k = j + 1; k < SIZE; k++) {
+                        if (board[k][i] != null) {
+                            board[j][i] = board[k][i];
+                            board[k][i] = null;
+                            board[j][i].setPos(j, i);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void shiftDown() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = SIZE - 1; j >= 0; j--) {
+                if (board[j][i] == null) {
+                    for (int k = j - 1; k >= 0; k--) {
+                        if (board[k][i] != null) {
+                            board[j][i] = board[k][i];
+                            board[k][i] = null;
+                            board[j][i].setPos(j, i);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    enum Direction {
+
+        UP(0, -1), DOWN(0, 1), LEFT(-1, 0), RIGHT(1, 0);
+
+        int x, y;
+
+        Direction(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        int getX() {
+            return x;
+        }
+
+        int getY() {
+            return y;
+        }
+    }
+
+    class Cell extends Rectangle {
+
+        int originalRow;
+        int originalCol;
+        int row;
+        int col;
         Text text;
         int value;
 
-        public Cell(int startingX,int startingY){
-            super(startingX,startingY,CEll_DIMENSION,CEll_DIMENSION);
+        public Cell(int row, int col, int startingX, int startingY) {
+            super(startingX, startingY, CEll_DIMENSION, CEll_DIMENSION);
+            originalRow = row;
+            originalCol = col;
+            this.row = row;
+            this.col = col;
             setFill(Color.GRAY);
-            value=2;
-            text= new Text();
-            text.setX(startingX+30);
-            text.setY(startingY+70);
+            value = 2;
+            text = new Text();
+            text.setX(startingX + 30);
+            text.setY(startingY + 70);
             text.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 60));
             text.setFill(Color.BLACK);
-            text.setText(""+value);
+            text.setText("" + value);
         }
 
-        public Text getText(){
+        public Text getText() {
             return text;
         }
 
-        void addValue(Cell cell){
-            value+=cell.value;
+        void addValue(Cell cell) {
+            value += cell.value;
         }
 
-        void addValue(int value){
-            this.value+=value;
+        void addValue(int value) {
+            this.value += value;
         }
 
-        int getValue(){
+        int getValue() {
             return value;
         }
+
+        boolean sameValue(Cell cell) {
+            return value == cell.value;
+        }
+
+        void setPos(int row, int col) {
+            this.row = row;
+            this.col = col;
+        }
+
+        int distance(Direction direction) {
+            int distance = 0;
+            switch (direction) {
+            case LEFT:
+            case RIGHT:
+                System.out.println(originalCol + " --" + col);
+                distance = (col-originalCol) * MOTION_DISTANCE;
+                break;
+            case UP:
+            case DOWN:
+                System.out.println(originalRow + " --" + row);
+                distance = (row-originalRow ) * MOTION_DISTANCE;
+                break;
+            }
+            originalRow = row;
+            originalCol = col;
+            return distance;
+        }
+
+
     }
 
 }
