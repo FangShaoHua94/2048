@@ -1,3 +1,5 @@
+package game;
+
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -9,26 +11,22 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontPosture;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Main extends Application implements EventHandler<KeyEvent> {
+public class Game extends Application implements EventHandler<KeyEvent> {
 
-    static final int SIZE = 4;
-    static final int HEIGHT = 450;
-    static final int WIDTH = 450;
-    static final int CEll_DIMENSION = 100;
-    static final int BORDER_WIDTH = 10;
-    static final int MOTION_DISTANCE = CEll_DIMENSION + BORDER_WIDTH;
-    static final Random random = new Random(System.currentTimeMillis());
-    static final long TRANSITION_DELAY = 50;
+    public static final int SIZE = 4;
+    public static final int HEIGHT = 450;
+    public static final int WIDTH = 450;
+    public static final int CEll_DIMENSION = 100;
+    public static final int BORDER_WIDTH = 10;
+    public static final int MOTION_DISTANCE = CEll_DIMENSION + BORDER_WIDTH;
+    public static final Random random = new Random(System.currentTimeMillis());
+    public static final long TRANSITION_DELAY = 50;
 
     Group root;
     ArrayList<TranslateTransition> motion = new ArrayList<>();
@@ -37,7 +35,9 @@ public class Main extends Application implements EventHandler<KeyEvent> {
 
     Cell[][] board = new Cell[SIZE][SIZE];
 
-    int[] border = new int[]{10, 110, 210, 310};
+    enum Direction {
+        UP, DOWN, LEFT, RIGHT
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -45,17 +45,19 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         primaryStage.setResizable(false);
         root = new Group();
         setBoard();
+        setControl();
+        generateCell(2);
+        Scene scene = new Scene(root, WIDTH, HEIGHT);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
 
+    private void setControl(){
         final Pane invisible = new Pane();
         invisible.setFocusTraversable(true);
         invisible.requestFocus();
         invisible.setOnKeyPressed(this);
         root.getChildren().add(invisible);
-
-        generateCell(2);
-        Scene scene = new Scene(root, WIDTH, HEIGHT);
-        primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
     @Override
@@ -94,15 +96,15 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         }
     }
 
-    void clearCell(){
-        for(Cell cell:toBeRemoved){
+    private void clearCell() {
+        for (Cell cell : toBeRemoved) {
             root.getChildren().remove(cell.getText());
             root.getChildren().remove(cell);
         }
         toBeRemoved.clear();
     }
 
-    void print() {
+    private void print() {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 if (board[i][j] == null) {
@@ -115,19 +117,19 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         }
     }
 
-    void move(Direction direction, Cell cell, int distance) {
+    private void move(Direction direction, Cell cell, int distance) {
         motion.add(translate(direction, cell, distance));
         motion.add(translate(direction, cell.getText(), distance));
     }
 
-    void playMotion() {
+    private void playMotion() {
         for (TranslateTransition translateTransition : motion) {
             translateTransition.play();
         }
         motion.clear();
     }
 
-    void move(Direction direction) {
+    private void move(Direction direction) {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 if (board[i][j] != null) {
@@ -137,7 +139,7 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         }
     }
 
-    TranslateTransition translate(Direction direction, Node node, int distance) {
+    private TranslateTransition translate(Direction direction, Node node, int distance) {
         TranslateTransition translateTransition = new TranslateTransition();
         translateTransition.setDuration(Duration.millis(TRANSITION_DELAY));
         translateTransition.setNode(node);
@@ -158,7 +160,7 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         return translateTransition;
     }
 
-    void setBoard() {
+    private void setBoard() {
         Rectangle square = new Rectangle(450, 450);
         square.setFill(Color.ROSYBROWN);
         square.addEventHandler(KeyEvent.KEY_TYPED, this);
@@ -172,7 +174,7 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         }
     }
 
-    void generateCell(int num) {
+    private void generateCell(int num) {
         if (numCell() == SIZE * SIZE) {
             System.out.println("game over");
             return;
@@ -189,7 +191,7 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         }
     }
 
-    int numCell() {
+    private int numCell() {
         int count = 0;
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
@@ -201,63 +203,63 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         return count;
     }
 
-    void mergeLeft(){
-        for(int i=0;i<SIZE;i++){
-            for(int j=0;j<SIZE-1;j++){
-                if(board[i][j]!=null && board[i][j+1]!=null && board[i][j].sameValue(board[i][j+1])){
+    private void mergeLeft() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE - 1; j++) {
+                if (board[i][j] != null && board[i][j + 1] != null && board[i][j].sameValue(board[i][j + 1])) {
                     toBeRemoved.add(board[i][j]);
-                    board[i][j]=board[i][j+1];
-                    board[i][j].setPos(i,j);
+                    board[i][j] = board[i][j + 1];
+                    board[i][j].setPos(i, j);
                     board[i][j].merge();
-                    board[i][j+1]=null;
+                    board[i][j + 1] = null;
                 }
             }
         }
     }
 
-    void mergeRight(){
-        for(int i=0;i<SIZE;i++){
-            for(int j=SIZE-1;j>0;j--){
-                if(board[i][j]!=null && board[i][j-1]!=null && board[i][j].sameValue(board[i][j-1])){
+    private void mergeRight() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = SIZE - 1; j > 0; j--) {
+                if (board[i][j] != null && board[i][j - 1] != null && board[i][j].sameValue(board[i][j - 1])) {
                     toBeRemoved.add(board[i][j]);
-                    board[i][j]=board[i][j-1];
-                    board[i][j].setPos(i,j);
+                    board[i][j] = board[i][j - 1];
+                    board[i][j].setPos(i, j);
                     board[i][j].merge();
-                    board[i][j-1]=null;
+                    board[i][j - 1] = null;
                 }
             }
         }
     }
 
-    void mergeUp(){
-        for(int i=0;i<SIZE;i++){
-            for(int j=0;j<SIZE-1;j++){
-                if(board[j][i]!=null && board[j+1][i]!=null && board[j][i].sameValue(board[j+1][i])){
+    private void mergeUp() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE - 1; j++) {
+                if (board[j][i] != null && board[j + 1][i] != null && board[j][i].sameValue(board[j + 1][i])) {
                     toBeRemoved.add(board[j][i]);
-                    board[j][i]=board[j+1][i];
-                    board[j][i].setPos(j,i);
+                    board[j][i] = board[j + 1][i];
+                    board[j][i].setPos(j, i);
                     board[j][i].merge();
-                    board[j+1][i]=null;
+                    board[j + 1][i] = null;
                 }
             }
         }
     }
 
-    void mergeDown(){
-        for(int i=0;i<SIZE;i++){
-            for(int j=SIZE-1;j>0;j--){
-                if(board[j][i]!=null && board[j-1][i]!=null && board[j][i].sameValue(board[j-1][i])){
+    private void mergeDown() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = SIZE - 1; j > 0; j--) {
+                if (board[j][i] != null && board[j - 1][i] != null && board[j][i].sameValue(board[j - 1][i])) {
                     toBeRemoved.add(board[j][i]);
-                    board[j][i]=board[j-1][i];
-                    board[j][i].setPos(j,i);
+                    board[j][i] = board[j - 1][i];
+                    board[j][i].setPos(j, i);
                     board[j][i].merge();
-                    board[j-1][i]=null;
+                    board[j - 1][i] = null;
                 }
             }
         }
     }
 
-    void shiftLeft() {
+    private void shiftLeft() {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 if (board[i][j] == null) {
@@ -274,7 +276,7 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         }
     }
 
-    void shiftRight() {
+    private void shiftRight() {
         for (int i = 0; i < SIZE; i++) {
             for (int j = SIZE - 1; j >= 0; j--) {
                 if (board[i][j] == null) {
@@ -291,7 +293,7 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         }
     }
 
-    void shiftUp() {
+    private void shiftUp() {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 if (board[j][i] == null) {
@@ -308,7 +310,7 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         }
     }
 
-    void shiftDown() {
+    private void shiftDown() {
         for (int i = 0; i < SIZE; i++) {
             for (int j = SIZE - 1; j >= 0; j--) {
                 if (board[j][i] == null) {
@@ -325,79 +327,5 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         }
     }
 
-    enum Direction {
-
-        UP, DOWN, LEFT, RIGHT
-
-    }
-
-    class Cell extends Rectangle {
-
-        int originalRow;
-        int originalCol;
-        int row;
-        int col;
-        Text text;
-        int value;
-
-        public Cell(int row, int col, int startingX, int startingY) {
-            super(startingX, startingY, CEll_DIMENSION, CEll_DIMENSION);
-            originalRow = row;
-            originalCol = col;
-            this.row = row;
-            this.col = col;
-            setFill(Color.GRAY);
-            value = 2;
-            text = new Text();
-            text.setX(startingX + 30);
-            text.setY(startingY + 70);
-            text.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 60));
-            text.setFill(Color.BLACK);
-            text.setText("" + value);
-        }
-
-        public Text getText() {
-            return text;
-        }
-
-        void merge() {
-            value *=2;
-            text.setText(""+value);
-        }
-
-        int getValue() {
-            return value;
-        }
-
-        boolean sameValue(Cell cell) {
-            return value == cell.value;
-        }
-
-        void setPos(int row, int col) {
-            this.row = row;
-            this.col = col;
-        }
-
-        int distance(Direction direction) {
-            int distance = 0;
-            switch (direction) {
-            case LEFT:
-            case RIGHT:
-                System.out.println(originalCol + " --" + col);
-                distance = (col-originalCol) * MOTION_DISTANCE;
-                break;
-            case UP:
-            case DOWN:
-                System.out.println(originalRow + " --" + row);
-                distance = (row-originalRow) * MOTION_DISTANCE;
-                break;
-            }
-            originalRow = row;
-            originalCol = col;
-            return distance;
-        }
-
-
-    }
 
 }
