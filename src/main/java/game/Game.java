@@ -37,10 +37,6 @@ public class Game extends Application implements EventHandler<KeyEvent> {
 
     Cell[][] board = new Cell[SIZE][SIZE];
 
-    enum Direction {
-        UP, DOWN, LEFT, RIGHT
-    }
-
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("2048");
@@ -54,7 +50,7 @@ public class Game extends Application implements EventHandler<KeyEvent> {
         primaryStage.show();
     }
 
-    private void setControl(){
+    private void setControl() {
         final Pane invisible = new Pane();
         invisible.setFocusTraversable(true);
         invisible.requestFocus();
@@ -125,11 +121,11 @@ public class Game extends Application implements EventHandler<KeyEvent> {
     }
 
     private void playMotion() {
-        translateMotion.get(translateMotion.size()-1).onFinishedProperty().set(actionEvent -> {
-            if(mergeMotion.isEmpty()){
+        translateMotion.get(translateMotion.size() - 1).onFinishedProperty().set(actionEvent -> {
+            if (mergeMotion.isEmpty()) {
                 controlOn = true;
-            }else {
-                mergeMotion.get(mergeMotion.size()-1).onFinishedProperty().set(event -> controlOn=true);
+            } else {
+                mergeMotion.get(mergeMotion.size() - 1).onFinishedProperty().set(event -> controlOn = true);
                 for (ScaleTransition scaleTransition : mergeMotion) {
                     scaleTransition.play();
                 }
@@ -148,7 +144,7 @@ public class Game extends Application implements EventHandler<KeyEvent> {
             for (int j = 0; j < SIZE; j++) {
                 if (board[i][j] != null) {
                     move(direction, board[i][j], board[i][j].distance(direction));
-                    if(board[i][j].hasMerged()){
+                    if (board[i][j].hasMerged()) {
                         mergeMotion.add(mergeSale(board[i][j]));
                         board[i][j].setMerged();
                     }
@@ -210,7 +206,7 @@ public class Game extends Application implements EventHandler<KeyEvent> {
         }
     }
 
-    private ScaleTransition scale(Node node){
+    private ScaleTransition scale(Node node) {
         ScaleTransition scaleTransition = new ScaleTransition();
         scaleTransition.setDuration(Duration.millis(TRANSITION_DELAY));
         scaleTransition.setNode(node);
@@ -224,8 +220,8 @@ public class Game extends Application implements EventHandler<KeyEvent> {
         return scaleTransition;
     }
 
-    private ScaleTransition mergeSale(Node node){
-        ScaleTransition scaleTransition=new ScaleTransition();
+    private ScaleTransition mergeSale(Node node) {
+        ScaleTransition scaleTransition = new ScaleTransition();
         scaleTransition.setDuration(Duration.millis(TRANSITION_DELAY));
         scaleTransition.setNode(node);
 //        scaleTransition.setFromX(1);
@@ -372,6 +368,10 @@ public class Game extends Application implements EventHandler<KeyEvent> {
                 }
             }
         }
+    }
+
+    enum Direction {
+        UP, DOWN, LEFT, RIGHT
     }
 
 

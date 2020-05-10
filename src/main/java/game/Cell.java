@@ -27,18 +27,18 @@ public class Cell extends Rectangle {
         super(startingX, startingY, CEll_DIMENSION, CEll_DIMENSION);
         originalRow = row;
         originalCol = col;
-        merged=false;
+        merged = false;
         this.row = row;
         this.col = col;
-        if(new Random(System.currentTimeMillis()+row+col*row).nextInt(10)==0){
-            value =4;
-        }else{
-            value =2;
+        if (new Random(System.currentTimeMillis() + row + col * row).nextInt(10) == 0) {
+            value = 4;
+        } else {
+            value = 2;
         }
         text = new Text();
 
-        text.setX(startingX+25);
-        text.setY(startingY+70);
+        text.setX(startingX + 25);
+        text.setY(startingY + 70);
         update();
         text.setText("" + value);
     }
@@ -50,15 +50,15 @@ public class Cell extends Rectangle {
     public void merge() {
         value *= 2;
         text.setText("" + value);
-        merged=true;
+        merged = true;
     }
 
-    public boolean hasMerged(){
+    public boolean hasMerged() {
         return merged;
     }
 
-    public void setMerged(){
-        merged=false;
+    public void setMerged() {
+        merged = false;
     }
 
     public int getValue() {
@@ -92,8 +92,8 @@ public class Cell extends Rectangle {
         return distance;
     }
 
-    private void update(){
-        switch (value){
+    private void update() {
+        switch (value) {
         case 2:
             setFill(Color.RED);
             text.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 50));
@@ -166,6 +166,9 @@ public class Cell extends Rectangle {
             setFill(Color.DARKBLUE);
             text.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 20));
             break;
+        default:
+            setFill(Color.WHITE);
+            text.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 20));
         }
     }
 }
