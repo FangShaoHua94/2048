@@ -32,6 +32,7 @@ public class Main extends Application implements EventHandler<KeyEvent> {
 
     Group root;
     ArrayList<TranslateTransition> motion = new ArrayList<>();
+    ArrayList<Cell> toBeRemoved = new ArrayList<>();
     boolean controlOn = true;
 
     Cell[][] board = new Cell[SIZE][SIZE];
@@ -63,25 +64,42 @@ public class Main extends Application implements EventHandler<KeyEvent> {
             if (event.getCode() == KeyCode.LEFT) {
                 System.out.println("move left");
                 shiftLeft();
+                mergeLeft();
+                shiftLeft();
                 move(Direction.LEFT);
             } else if (event.getCode() == KeyCode.RIGHT) {
                 System.out.println("move right");
+                shiftRight();
+                mergeRight();
                 shiftRight();
                 move(Direction.RIGHT);
             } else if (event.getCode() == KeyCode.UP) {
                 System.out.println("move up");
                 shiftUp();
+                mergeUp();
+                shiftUp();
                 move(Direction.UP);
             } else if (event.getCode() == KeyCode.DOWN) {
                 System.out.println("move down");
                 shiftDown();
+                mergeDown();
+                shiftDown();
                 move(Direction.DOWN);
             }
             controlOn = false;
+            clearCell();
             playMotion();
             generateCell(1);
             print();
         }
+    }
+
+    void clearCell(){
+        for(Cell cell:toBeRemoved){
+            root.getChildren().remove(cell.getText());
+            root.getChildren().remove(cell);
+        }
+        toBeRemoved.clear();
     }
 
     void print() {
@@ -183,6 +201,62 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         return count;
     }
 
+    void mergeLeft(){
+        for(int i=0;i<SIZE;i++){
+            for(int j=0;j<SIZE-1;j++){
+                if(board[i][j]!=null && board[i][j+1]!=null && board[i][j].sameValue(board[i][j+1])){
+                    toBeRemoved.add(board[i][j]);
+                    board[i][j]=board[i][j+1];
+                    board[i][j].setPos(i,j);
+                    board[i][j].merge();
+                    board[i][j+1]=null;
+                }
+            }
+        }
+    }
+
+    void mergeRight(){
+        for(int i=0;i<SIZE;i++){
+            for(int j=SIZE-1;j>0;j--){
+                if(board[i][j]!=null && board[i][j-1]!=null && board[i][j].sameValue(board[i][j-1])){
+                    toBeRemoved.add(board[i][j]);
+                    board[i][j]=board[i][j-1];
+                    board[i][j].setPos(i,j);
+                    board[i][j].merge();
+                    board[i][j-1]=null;
+                }
+            }
+        }
+    }
+
+    void mergeUp(){
+        for(int i=0;i<SIZE;i++){
+            for(int j=0;j<SIZE-1;j++){
+                if(board[j][i]!=null && board[j+1][i]!=null && board[j][i].sameValue(board[j+1][i])){
+                    toBeRemoved.add(board[j][i]);
+                    board[j][i]=board[j+1][i];
+                    board[j][i].setPos(j,i);
+                    board[j][i].merge();
+                    board[j+1][i]=null;
+                }
+            }
+        }
+    }
+
+    void mergeDown(){
+        for(int i=0;i<SIZE;i++){
+            for(int j=SIZE-1;j>0;j--){
+                if(board[j][i]!=null && board[j-1][i]!=null && board[j][i].sameValue(board[j-1][i])){
+                    toBeRemoved.add(board[j][i]);
+                    board[j][i]=board[j-1][i];
+                    board[j][i].setPos(j,i);
+                    board[j][i].merge();
+                    board[j-1][i]=null;
+                }
+            }
+        }
+    }
+
     void shiftLeft() {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
@@ -253,22 +327,8 @@ public class Main extends Application implements EventHandler<KeyEvent> {
 
     enum Direction {
 
-        UP(0, -1), DOWN(0, 1), LEFT(-1, 0), RIGHT(1, 0);
+        UP, DOWN, LEFT, RIGHT
 
-        int x, y;
-
-        Direction(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        int getX() {
-            return x;
-        }
-
-        int getY() {
-            return y;
-        }
     }
 
     class Cell extends Rectangle {
@@ -300,12 +360,9 @@ public class Main extends Application implements EventHandler<KeyEvent> {
             return text;
         }
 
-        void addValue(Cell cell) {
-            value += cell.value;
-        }
-
-        void addValue(int value) {
-            this.value += value;
+        void merge() {
+            value *=2;
+            text.setText(""+value);
         }
 
         int getValue() {
@@ -332,7 +389,7 @@ public class Main extends Application implements EventHandler<KeyEvent> {
             case UP:
             case DOWN:
                 System.out.println(originalRow + " --" + row);
-                distance = (row-originalRow ) * MOTION_DISTANCE;
+                distance = (row-originalRow) * MOTION_DISTANCE;
                 break;
             }
             originalRow = row;
