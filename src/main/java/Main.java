@@ -1,16 +1,23 @@
+import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Box;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Main extends Application implements EventHandler<KeyEvent> {
@@ -20,14 +27,35 @@ public class Main extends Application implements EventHandler<KeyEvent> {
     static final int WIDTH=450;
     static final int CEll_DIMENSION=100;
     static final int BORDER_WIDTH=10;
+    static final int MOTION_DISTANCE=CEll_DIMENSION+BORDER_WIDTH;
     static final Random random = new Random(System.currentTimeMillis());
 
     Group root;
+    ArrayList<TranslateTransition> motion= new ArrayList<>();
 
     Cell[][] board=new Cell[SIZE][SIZE];
 
-    int[] leftTopBound= new int[]{10,110,210,310};
-    int[] rightBottomBound=new int[]{110,220,330,440};
+    int[] border= new int[]{10,110,210,310};
+
+    enum Direction{
+
+        UP(0,-1),DOWN(0,1),LEFT(-1,0),RIGHT(1,0);
+
+        int x, y;
+        Direction(int x,int y){
+            this.x=x;
+            this.y=y;
+        }
+
+        int getX(){
+            return x;
+        }
+
+        int getY(){
+            return y;
+        }
+    }
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -35,6 +63,13 @@ public class Main extends Application implements EventHandler<KeyEvent> {
         primaryStage.setResizable(false);
         root = new Group();
         setBoard();
+
+        final Pane invisible = new Pane();
+        invisible.setFocusTraversable(true);
+        invisible.requestFocus();
+        invisible.setOnKeyPressed(this);
+        root.getChildren().add(invisible);
+
         setStartingCell();
         Scene scene = new Scene(root, WIDTH, HEIGHT);
         primaryStage.setScene(scene);
@@ -43,12 +78,68 @@ public class Main extends Application implements EventHandler<KeyEvent> {
 
     @Override
     public void handle(KeyEvent event) {
+        if(event.getCode()==KeyCode.LEFT){
+            System.out.println("move left");
+            move(Direction.LEFT);
+        } else if(event.getCode()==KeyCode.RIGHT){
+            System.out.println("move right");
+            move(Direction.RIGHT);
+        } else if(event.getCode()==KeyCode.UP){
+            System.out.println("move up");
+            move(Direction.UP);
+        } else if(event.getCode()==KeyCode.DOWN){
+            System.out.println("move down");
+            move(Direction.DOWN);
+        }
+        playMotion();
+    }
 
+    void move(Direction direction){
+        for(int i=0;i<SIZE;i++){
+            for (int j=0;j<SIZE;j++){
+                if(board[i][j]!=null){
+                    motion.add(translate(direction,board[i][j]));
+                    motion.add(translate(direction,board[i][j].getText()));
+                }
+            }
+        }
+    }
+
+    void playMotion(){
+        for(TranslateTransition translateTransition:motion){
+            translateTransition.play();
+        }
+        motion.clear();
+    }
+
+    TranslateTransition translate(Direction direction, Node node){
+        TranslateTransition translateTransition = new TranslateTransition();
+        translateTransition.setDuration(Duration.millis(50));
+        translateTransition.setNode(node);
+        switch (direction){
+        case UP:
+            translateTransition.setByY(-MOTION_DISTANCE);
+            break;
+        case DOWN:
+            translateTransition.setByY(MOTION_DISTANCE);
+            break;
+        case LEFT:
+            translateTransition.setByX(-MOTION_DISTANCE);
+            break;
+        case RIGHT:
+            translateTransition.setByX(MOTION_DISTANCE);
+            break;
+        default:
+        }
+        translateTransition.setCycleCount(1);
+        translateTransition.setAutoReverse(false);
+        return translateTransition;
     }
 
     void setBoard(){
         Rectangle square=new Rectangle(450,450);
         square.setFill(Color.ROSYBROWN);
+        square.addEventHandler(KeyEvent.KEY_TYPED,this);
         root.getChildren().add(square);
         for(int i=0;i<SIZE;i++){
             for(int j=0;j<SIZE;j++){
